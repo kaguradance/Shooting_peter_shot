@@ -342,7 +342,7 @@ void Game::render()
 
 	this->renderGUI();
 
-	//Game over screen vbvb
+	//Game over screen
 	if (this->player->getHp() <= 0)
 	{
 		//this->window->draw(this->scoreText);
