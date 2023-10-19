@@ -115,7 +115,7 @@ void Game::run()
 	{
 		this->updatePollEvent();
 
-		if(this->player->getHp() > 0)
+		if(this->player->getHp() > 0 && this->points >= 0)
 			this->update();
 
 		this->render();
@@ -131,13 +131,21 @@ void Game::updatePollEvent()
 			this->window->close();
 		if (e.Event::KeyPressed && e.Event::key.code == sf::Keyboard::Escape)
 			this->window->close();
-		if (this->player->getHp() <= 0)
+		if (this->player->getHp() <= 0 || this->points < 0)
 		{
 			if (e.Event::KeyPressed && e.Event::key.code == sf::Keyboard::Enter)
 			{
+				std::cout << "Enter pressed!" << std::endl;
 				this->player->setHp(5);
 				this->points = 0;
-				this->player->setPosition(this->window->getSize().x / 2 - (this->player->getBounds().width / 2), this->window->getSize().y / 2 - this->player->getBounds().top / 2);
+				for (auto* enemy : this->enemies)
+				{
+					delete enemy;
+				}
+				this->enemies.clear();
+				this->counter = 0;
+				this->gameState = GameState::MainMenu;
+				mainMenu.gameStatus = "";
 			}
 				
 		}
@@ -241,13 +249,13 @@ void Game::updateEnemies()
 		this->spawnTimer = 0.f;
 	}
 
-	if (timer.getElapsedTime().asSeconds() >= 10.f) {
+	if (timer.getElapsedTime().asSeconds() >= 4.f) {
 		countSpwanTimer += 0.1f;
 		timer.restart();
 	}
 
 	//update
-	unsigned counter = 0;
+	counter = 0;
 	for (auto* enemy : this->enemies)
 	{
 		enemy->update();
@@ -257,6 +265,7 @@ void Game::updateEnemies()
 		{
 			//delate enemy
 			delete this->enemies.at(counter);
+			points -= 1;
 			this->enemies.erase(this->enemies.begin() + counter);
 		}
 
@@ -298,14 +307,34 @@ void Game::updateCombat()
 
 void Game::update()
 {
-	this->updateInput();
-	this->player->update();
-	this->updateCollision();
-	this->updateBullets();
-	this->updateEnemies();
-	this->updateCombat();
-	this->updateGUI();
-	this->updateWorld();
+	
+
+	if (this->gameState == GameState::GamePlay)
+	{
+		this->updateInput();
+		this->player->update();
+		this->updateCollision();
+		this->updateBullets();
+		this->updateEnemies();
+		this->updateCombat();
+		this->updateGUI();
+		this->updateWorld();
+		
+	}
+	else if (this->gameState == GameState::MainMenu)
+	{
+		this->mainMenu.updateMouseInput(*window);
+		mainMenu.draw(*this->window);
+
+		if (mainMenu.gameStatus == "Start")
+		{
+			gameState = GameState::GamePlay;
+			this->player->setPosition(this->window->getSize().x / 2 - (this->player->getBounds().width / 2), this->window->getSize().y / 2 - this->player->getBounds().top / 2);
+			this->countSpwanTimer = 0.2f;
+			
+			mainMenu.gameStatus = "";
+		}
+	}
 }
 
 void Game::renderGUI()
@@ -327,28 +356,39 @@ void Game::render()
 	//draw world
 	this->renderWorld();
 
-	//draw stuffs
-	this->player->render(*this->window);
-
-	for (auto* bullet : this->bullets)
+	if (this->gameState == GameState::GamePlay)
 	{
-		bullet->render(this->window);
-	}
+		this->player->render(*this->window);
 
-	for (auto* enemy : this->enemies)
+		for (auto* bullet : this->bullets)
+		{
+			bullet->render(this->window);
+		}
+
+		for (auto* enemy : this->enemies)
+		{
+			enemy->render(this->window);
+		}
+
+		this->renderGUI();
+
+		//Game over screen
+		if (this->player->getHp() <= 0 || this->points < 0)
+		{
+			//this->window->draw(this->scoreText);
+			this->window->draw(this->gameOverText);
+			this->window->draw(this->newGameText);
+
+		}
+	
+
+	}
+	else if (this->gameState == GameState::MainMenu)
 	{
-		enemy->render(this->window);
+		//draw stuffs
+		mainMenu.draw(*this->window);
 	}
-
-	this->renderGUI();
-
-	//Game over screen
-	if (this->player->getHp() <= 0)
-	{
-		//this->window->draw(this->scoreText);
-		this->window->draw(this->gameOverText);
-		this->window->draw(this->newGameText);
-	}
+	
 
 	this->window->display();
 }

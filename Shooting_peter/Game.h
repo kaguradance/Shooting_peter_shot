@@ -1,13 +1,21 @@
 #pragma once
 
-#include<map>
-#include<string>
-#include<sstream>
-#include<SFML/Graphics.hpp>
-#include<SFML/System/Clock.hpp>
+#include <map>
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <SFML/Graphics.hpp>
+#include <SFML/System/Clock.hpp>
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
+#include "MainMenu.h"
+
+enum class GameState
+{
+	MainMenu,
+	GamePlay,
+};
 
 class Game
 {
@@ -28,9 +36,13 @@ private:
 	sf::Texture worldBackgroundTex;
 	sf::Sprite worldBackground;
 
-	unsigned points;
+	int points;
+
+	unsigned counter = 0;
 
 	Player* player;
+	GameState gameState;
+	MainMenu mainMenu;
 
 	sf::RectangleShape playerHpBar;
 	sf::RectangleShape playerHpBarBack;
@@ -51,6 +63,7 @@ private:
 	void initplayer();
 	void initEnemies();
 
+
 public:
 	Game();
 	virtual ~Game();
@@ -66,6 +79,7 @@ public:
 	void updateBullets();
 	void updateEnemies();
 	void updateCombat();
+
 	void update();
 
 	void renderGUI();
