@@ -19,11 +19,15 @@ void Game::initGUI()
 	if (!this->font.loadFromFile("Fonts/Amatic-Bold.ttf"))
 		std::cout << "ERROR Fonts Fail" << "\n";
 
-	this->pointText.setPosition(700.f, 20.f);
+	this->pointText.setPosition(650.f, 20.f);
 	this->pointText.setFont(this->font);
 	this->pointText.setCharacterSize(36);
 	this->pointText.setFillColor(sf::Color::White);
-	this->pointText.setString("test");
+
+	this->pointMaxText.setPosition(650.f, 50.f);
+	this->pointMaxText.setFont(this->font);
+	this->pointMaxText.setCharacterSize(36);
+	this->pointMaxText.setFillColor(sf::Color::White);
 
 	this->gameOverText.setFont(this->font);
 	this->gameOverText.setCharacterSize(70);
@@ -36,7 +40,7 @@ void Game::initGUI()
 	this->newGameText.setFont(this->font);
 	this->newGameText.setCharacterSize(36);
 	this->newGameText.setFillColor(sf::Color::White);
-	this->newGameText.setString("Press Enter to try agian.");
+	this->newGameText.setString("Press Enter to go to next page.");
 	this->newGameText.setPosition(
 		this->window->getSize().x / 2.f - this->newGameText.getGlobalBounds().width / 2.f,
 		this->window->getSize().y / 2.f - this->gameOverText.getGlobalBounds().height / 2.f + 100.f);
@@ -115,7 +119,7 @@ void Game::run()
 	{
 		this->updatePollEvent();
 
-		if(this->player->getHp() > 0)
+		if(this->player->getHp() > 0 && this->points >= 0)
 			this->update();
 
 		this->render();
@@ -131,15 +135,23 @@ void Game::updatePollEvent()
 			this->window->close();
 		if (e.Event::KeyPressed && e.Event::key.code == sf::Keyboard::Escape)
 			this->window->close();
-		if (this->player->getHp() <= 0)
+		if (this->player->getHp() <= 0 || this->points < 0)
 		{
 			if (e.Event::KeyPressed && e.Event::key.code == sf::Keyboard::Enter)
 			{
+				std::cout << "Enter pressed!" << std::endl;
 				this->player->setHp(5);
 				this->points = 0;
-				this->player->setPosition(this->window->getSize().x / 2 - (this->player->getBounds().width / 2), this->window->getSize().y / 2 - this->player->getBounds().top / 2);
+				for (auto* enemy : this->enemies)
+				{
+					delete enemy;
+				}
+				this->enemies.clear();
+				this->counter = 0;
+				this->gameState = GameState::GameOver;
+				std::cout << "Game Over" << std::endl;
+				mainMenu.gameStatus = "";
 			}
-				
 		}
 	}
 }
@@ -175,9 +187,11 @@ void Game::updateGUI()
 	std::stringstream ss;
 	ss << "Point : " << this->points;
 	this->pointText.setString(ss.str());
+	std::stringstream sss;
+	sss << "PointMax : " << this->pointMax;
+	this->pointMaxText.setString(sss.str());
 
 	//update player GUI
-	//this->player->setHp(5);
 	float hpPercent = static_cast<float> (this->player->getHp()) / this->player->getHpMax();
 	this->playerHpBar.setSize(sf::Vector2f(300.f * hpPercent, this->playerHpBar.getSize().y));
 }
@@ -241,13 +255,13 @@ void Game::updateEnemies()
 		this->spawnTimer = 0.f;
 	}
 
-	if (timer.getElapsedTime().asSeconds() >= 10.f) {
+	if (timer.getElapsedTime().asSeconds() >= 4.f) {
 		countSpwanTimer += 0.1f;
 		timer.restart();
 	}
 
 	//update
-	unsigned counter = 0;
+	counter = 0;
 	for (auto* enemy : this->enemies)
 	{
 		enemy->update();
@@ -257,6 +271,7 @@ void Game::updateEnemies()
 		{
 			//delate enemy
 			delete this->enemies.at(counter);
+			points -= 5;
 			this->enemies.erase(this->enemies.begin() + counter);
 		}
 
@@ -283,7 +298,10 @@ void Game::updateCombat()
 			if (this->enemies[i]->getBounds().intersects(this->bullets[k]->getBounds()))
 			{
 				this->points += this->enemies[i]->getPoints();
-
+				if (pointMax == points-1)
+				{
+					this->pointMax += 1;
+				}
 				delete this->enemies[i];
 				this->enemies.erase(this->enemies.begin() + i);
 
@@ -298,19 +316,62 @@ void Game::updateCombat()
 
 void Game::update()
 {
-	this->updateInput();
-	this->player->update();
-	this->updateCollision();
-	this->updateBullets();
-	this->updateEnemies();
-	this->updateCombat();
-	this->updateGUI();
-	this->updateWorld();
+	
+
+	if (this->gameState == GameState::GamePlay)
+	{
+		this->updateInput();
+		this->player->update();
+		this->updateCollision();
+		this->updateBullets();
+		this->updateEnemies();
+		this->updateCombat();
+		this->updateGUI();
+		this->updateWorld();
+		
+	}
+	else if (this->gameState == GameState::MainMenu)
+	{
+		this->mainMenu.updateMouseInput(*window);
+		mainMenu.draw(*this->window);
+
+		if (mainMenu.gameStatus == "Start")
+		{
+			gameState = GameState::GamePlay;
+			this->player->setPosition(this->window->getSize().x / 2 - (this->player->getBounds().width / 2), this->window->getSize().y / 2 - this->player->getBounds().top / 2);
+			this->countSpwanTimer = 0.2f;
+			mainMenu.gameStatus = "";
+		}
+	}
+	else if (this->gameState == GameState::GameOver)
+	{
+		std::cout << "1" << std::endl;
+		this->gameOver.updateMouseInput(*window);
+		gameOver.draw(*this->window);
+
+		if (gameOver.gameStatus == "Scoreboard")
+		{
+			gameState = GameState::Scoreboard;
+			gameOver.gameStatus = "";
+		}
+	}
+	else if (this->gameState == GameState::Scoreboard)
+	{
+		this->scoreboard.updateMouseInput(*window);
+		scoreboard.draw(*this->window);
+
+		if (scoreboard.gameStatus == "MainMenu")
+		{
+			gameState = GameState::MainMenu;
+			scoreboard.gameStatus = "";
+		}
+	}
 }
 
 void Game::renderGUI()
 {
 	this->window->draw(this->pointText);
+	this->window->draw(this->pointMaxText);
 	this->window->draw(this->playerHpBarBack);
 	this->window->draw(this->playerHpBar);
 }
@@ -327,27 +388,42 @@ void Game::render()
 	//draw world
 	this->renderWorld();
 
-	//draw stuffs
-	this->player->render(*this->window);
-
-	for (auto* bullet : this->bullets)
+	if (this->gameState == GameState::GamePlay)
 	{
-		bullet->render(this->window);
+		this->player->render(*this->window);
+
+		for (auto* bullet : this->bullets)
+		{
+			bullet->render(this->window);
+		}
+
+		for (auto* enemy : this->enemies)
+		{
+			enemy->render(this->window);
+		}
+
+		this->renderGUI();
+
+		//Game over screen
+		if (this->player->getHp() <= 0 || this->points < 0)
+		{
+			this->window->draw(this->gameOverText);
+			this->window->draw(this->newGameText);
+
+		}
 	}
-
-	for (auto* enemy : this->enemies)
+	else if (this->gameState == GameState::MainMenu)
 	{
-		enemy->render(this->window);
+		//draw stuffs
+		mainMenu.draw(*this->window);
 	}
-
-	this->renderGUI();
-
-	//Game over screen
-	if (this->player->getHp() <= 0)
+	else if (this->gameState == GameState::GameOver)
 	{
-		//this->window->draw(this->scoreText);
-		this->window->draw(this->gameOverText);
-		this->window->draw(this->newGameText);
+		gameOver.draw(*this->window);
+	}
+	else if (this->gameState == GameState::Scoreboard)
+	{
+		scoreboard.draw(*this->window);
 	}
 
 	this->window->display();

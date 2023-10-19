@@ -2,6 +2,7 @@
 #define ENEMY_H
 #include<SFML/Graphics.hpp>
 #include<iostream>
+#include<sstream>
 
 class Enemy
 {
@@ -9,10 +10,13 @@ private:
 	unsigned pointCount;
 	sf::Sprite shape;
 	sf::Texture texture;
+	sf::Clock Timer;
 
 	float speed;
+	float speedTimer;
 	int damage;
 	int points;
+	int pointMax;
 
 	void initShape();
 	void initVariables();

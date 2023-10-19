@@ -2,20 +2,23 @@
 
 void Enemy::initShape()
 {
-	if (!this->texture.loadFromFile("Textures/ghost.png"))
+	if (!this->texture.loadFromFile("Textures/big_demon_idle_anim_f0.png"))
 	{
 		std::cout << "ERROR lodeing ghost texture!" << "\n";
 	}
 	this->shape.setTexture(this->texture);
-	this->shape.scale(0.5f, 0.5f);
+	this->shape.scale(2.5f, 2.5f);
 }
 
 void Enemy::initVariables()
 {
 	this->pointCount = 1;
-	this->speed = this->pointCount;
+	this->speedTimer = 0.1f;
+	this->speed = 1;
+	//this->speed = this->speedTimer;
 	this->damage = this->pointCount;
 	this->points = this->pointCount;
+	this->pointMax = this->pointCount;
 }
 
 Enemy::Enemy(float pos_x,float pos_y)
@@ -44,6 +47,7 @@ const int& Enemy::getDamage() const
 const int& Enemy::getPoints() const
 {
 	return this->points;
+	return this->pointMax;
 }
 
 void Enemy::update()
