@@ -18,8 +18,7 @@ void Game::initGUI()
 {
 	if (!this->font.loadFromFile("Fonts/Amatic-Bold.ttf"))
 		std::cout << "ERROR Fonts Fail" << "\n";
-
-	this->pointText.setPosition(650.f, 20.f);
+	this->pointText.setPosition(680.f, 10.f);
 	this->pointText.setFont(this->font);
 	this->pointText.setCharacterSize(36);
 	this->pointText.setFillColor(sf::Color::White);
@@ -79,6 +78,17 @@ void Game::initEnemies()
 	this->countSpwanTimer = 0.2f;
 }
 
+void Game::initItems()
+{
+	this->spawnTimerMaxItemHeart = 200;
+	this->spawnTimerItemHeart = this->spawnTimerMaxItemHeart;
+	this->countSpwanTimerItemHeart = 0.1f;
+
+	this->spawnTimerMaxItemMagazine = 300;
+	this->spawnTimerItemMagazine = this->spawnTimerMaxItemMagazine;
+	this->countSpwanTimerItemMagazine = 0.1f;
+}
+
 Game::Game()
 {
 	this->initWindow();
@@ -88,6 +98,7 @@ Game::Game()
 	this->initSystems();
 	this->initplayer();
 	this->initEnemies();
+	this->initItems();
 }
 
 Game::~Game()
@@ -102,6 +113,11 @@ Game::~Game()
 	}
 
 	for (auto* i : this->bullets)
+	{
+		delete i;
+	}
+
+	for (auto* i : this->items)
 	{
 		delete i;
 	}
@@ -142,12 +158,20 @@ void Game::updatePollEvent()
 				std::cout << "Enter pressed!" << std::endl;
 				this->player->setHp(5);
 				this->points = 0;
+				this->countSpwanTimer = 0.2f;
+				this->countSpwanTimerItemHeart = 0.1f;
 				for (auto* enemy : this->enemies)
 				{
 					delete enemy;
 				}
+				for (auto* item : this->items)
+				{
+					delete item;
+				}
 				this->enemies.clear();
+				this->items.clear();
 				this->counter = 0;
+				this->counterItems = 0;
 				this->gameState = GameState::GameOver;
 				std::cout << "Game Over" << std::endl;
 				mainMenu.gameStatus = "";
@@ -237,10 +261,7 @@ void Game::updateBullets()
 			delete this->bullets.at(counter);
 			this->bullets.erase(this->bullets.begin() + counter);
 			--counter;
-
-			//std::cout << this->bullets.size() << "\n";
 		}
-
 		++counter;
 	}
 }
@@ -255,9 +276,10 @@ void Game::updateEnemies()
 		this->spawnTimer = 0.f;
 	}
 
-	if (timer.getElapsedTime().asSeconds() >= 4.f) {
+	//count spawning time Enemy
+	if (timerEnemy.getElapsedTime().asSeconds() >= 6.f) {
 		countSpwanTimer += 0.1f;
-		timer.restart();
+		timerEnemy.restart();
 	}
 
 	//update
@@ -271,7 +293,7 @@ void Game::updateEnemies()
 		{
 			//delate enemy
 			delete this->enemies.at(counter);
-			points -= 5;
+			points -= 1;
 			this->enemies.erase(this->enemies.begin() + counter);
 		}
 
@@ -288,6 +310,55 @@ void Game::updateEnemies()
 	}
 }
 
+void Game::updateItems()
+{
+	this->spawnTimerItemHeart += countSpwanTimerItemHeart; //spawn time
+
+	//spawning item
+	if (this->spawnTimerItemHeart >= spawnTimerMaxItemHeart)
+	{
+		this->items.push_back(new Item(rand() % this->window->getSize().x - 20.f, -100.f, ItemType::HEART));
+		this->spawnTimerItemHeart = 0.f;
+	}
+
+	//count spawning time item
+	if (timerItem.getElapsedTime().asSeconds() >= 20.f) {
+		countSpwanTimerItemHeart += 0.1f;
+		timerItem.restart();
+	}
+	
+	//update item
+	counterItems = 0;
+	for (auto* item : this->items)
+	{
+		item->update();
+
+		//item  culling
+		if (item->getBounds().left + item->getBounds().width < 10.f)
+		{
+			//Delete item
+			delete this->items.at(counterItems);
+			this->items.erase(this->items.begin() + counterItems);
+		}
+
+		//Item player collision
+		else if (item->getBounds().intersects(this->player->getBounds()))
+		{
+			std::cout << "Player collected an item!" << std::endl;
+
+			switch (item->getType())
+			{
+			case HEART:
+				this->player->gainHeart(item->getType());
+				break;
+			}
+			delete this->items.at(counterItems);
+			this->items.erase(this->items.begin() + counterItems);
+		}
+		++counterItems;
+	}
+}
+
 void Game::updateCombat()
 {
 	for (int i = 0; i < this->enemies.size(); ++i)
@@ -295,7 +366,7 @@ void Game::updateCombat()
 		bool enemy_deleted = false;
 		for (size_t k = 0; k < this->bullets.size() && enemy_deleted == false; k++)
 		{
-			if (this->enemies[i]->getBounds().intersects(this->bullets[k]->getBounds()))
+			if (i  < this->enemies.size() && this->enemies[i]->getBounds().intersects(this->bullets[k]->getBounds()))
 			{
 				this->points += this->enemies[i]->getPoints();
 				if (pointMax == points-1)
@@ -316,8 +387,6 @@ void Game::updateCombat()
 
 void Game::update()
 {
-	
-
 	if (this->gameState == GameState::GamePlay)
 	{
 		this->updateInput();
@@ -325,10 +394,10 @@ void Game::update()
 		this->updateCollision();
 		this->updateBullets();
 		this->updateEnemies();
+		this->updateItems();
 		this->updateCombat();
 		this->updateGUI();
 		this->updateWorld();
-		
 	}
 	else if (this->gameState == GameState::MainMenu)
 	{
@@ -339,7 +408,6 @@ void Game::update()
 		{
 			gameState = GameState::GamePlay;
 			this->player->setPosition(this->window->getSize().x / 2 - (this->player->getBounds().width / 2), this->window->getSize().y / 2 - this->player->getBounds().top / 2);
-			this->countSpwanTimer = 0.2f;
 			mainMenu.gameStatus = "";
 		}
 		else if (mainMenu.gameStatus == "Scoreboard")
@@ -350,7 +418,6 @@ void Game::update()
 	}
 	else if (this->gameState == GameState::GameOver)
 	{
-		std::cout << "1" << std::endl;
 		this->gameOver.updateMouseInput(*window);
 		gameOver.draw(*this->window);
 
@@ -407,8 +474,12 @@ void Game::render()
 			enemy->render(this->window);
 		}
 
-		this->renderGUI();
+		for (auto* item : this->items)
+		{
+			item->render(this->window);
+		}
 
+		this->renderGUI();
 		//Game over screen
 		if (this->player->getHp() <= 0 || this->points < 0)
 		{
@@ -430,7 +501,5 @@ void Game::render()
 	{
 		scoreboard.draw(*this->window);
 	}
-	
-
 	this->window->display();
 }

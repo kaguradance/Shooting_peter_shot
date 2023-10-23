@@ -13,6 +13,7 @@ private:
 
 	float attackCooldown;
 	float attackCooldownMax;
+	float currentShootingSpeed;
 
 	int hp;
 	int hpMax;
@@ -36,6 +37,8 @@ public:
 	void setPosition(const float x, const float y);
 	void setHp(const int hp);
 	void loseHp(const int value);
+
+	void gainHeart(int hp);
 
 	//Functions
 	void move(const float dirX, const float dirY);

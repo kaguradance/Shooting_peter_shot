@@ -12,6 +12,7 @@
 #include "MainMenu.h"
 #include "GameOver.h"
 #include "Scoreboard.h"
+#include "Item.h"
 
 enum class GameState
 {
@@ -24,7 +25,8 @@ enum class GameState
 class Game
 {
 private:
-	sf::Clock timer;
+	sf::Clock timerEnemy;
+	sf::Clock timerItem;
 
 	sf::RenderWindow* window;
 
@@ -35,19 +37,22 @@ private:
 	sf::Font font;
 	sf::Text pointText;
 	sf::Text pointMaxText;
+
 	sf::Text gameOverText;
-	sf::Text newGameText;
-	sf::Text pointMaxtext;
+	sf::Text newGameText;;
 
 	sf::Texture worldBackgroundTex;
 	sf::Sprite worldBackground;
 
 	int points;
 	int pointMax;
+	int type;
 
 	unsigned counter = 0;
+	unsigned counterItems = 0;
 
 	Player* player;
+
 	GameState gameState;
 	MainMenu mainMenu;
 	GameOver gameOver;
@@ -59,8 +64,18 @@ private:
 	float spawnTimer;
 	float spawnTimerMax;
 	float countSpwanTimer;
-
 	std::vector<Enemy*> enemies;
+
+	float spawnTimerItemHeart;
+	float spawnTimerMaxItemHeart;
+	float countSpwanTimerItemHeart;
+
+	float spawnTimerItemMagazine;
+	float spawnTimerMaxItemMagazine;
+	float countSpwanTimerItemMagazine;
+
+	bool itemSpawn = false;
+	std::vector<Item*> items;
 
 	//Private functions
 	void initWindow();
@@ -71,7 +86,7 @@ private:
 
 	void initplayer();
 	void initEnemies();
-
+	void initItems();
 
 public:
 	Game();
@@ -87,6 +102,7 @@ public:
 	void updateCollision();
 	void updateBullets();
 	void updateEnemies();
+	void updateItems();
 	void updateCombat();
 
 	void update();

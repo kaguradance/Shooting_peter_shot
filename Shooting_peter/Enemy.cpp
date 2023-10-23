@@ -7,14 +7,14 @@ void Enemy::initShape()
 		std::cout << "ERROR lodeing ghost texture!" << "\n";
 	}
 	this->shape.setTexture(this->texture);
-	this->shape.scale(2.5f, 2.5f);
+	this->shape.scale(2.0f, 2.0f);
 }
 
 void Enemy::initVariables()
 {
 	this->pointCount = 1;
 	this->speedTimer = 0.1f;
-	this->speed = 1;
+	this->speed = 0.7f;
 	//this->speed = this->speedTimer;
 	this->damage = this->pointCount;
 	this->points = this->pointCount;

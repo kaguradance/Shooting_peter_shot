@@ -2,8 +2,8 @@
 
 void Player::initVariables()
 {
-	this->movementSpeed = 2.f;
-	this->attackCooldownMax = 10.f;
+	this->movementSpeed = 3.f;
+	this->attackCooldownMax = 20.f;
 	this->attackCooldown = this->attackCooldownMax;
 
 	this->hpMax = 5;
@@ -23,6 +23,7 @@ void Player::initSprite()
 {
 	this->sprite.setTexture(this->texture);
 	this->sprite.scale(3.f, 3.f);
+	this->sprite.setPosition(200.f, 530.f);
 }
 
 Player::Player()
@@ -79,6 +80,16 @@ void Player::loseHp(const int value)
 		this->hp = 0;
 }
 
+void Player::gainHeart(int heart)
+{
+	this->hp += heart;
+	this->hpMax += heart;
+	if (this->hp > 0)
+		this->hp += 1;
+	if (this->hpMax > 0)
+		this->hpMax += 1;
+}
+
 void Player::move(const float dirX, const float dirY)
 {
 	this->sprite.move(this->movementSpeed * dirX, this->movementSpeed * dirY);
@@ -97,7 +108,7 @@ const bool Player::canAttack()
 void Player::updateAttack()
 {
 	if (this->attackCooldown < this->attackCooldownMax)
-		this->attackCooldown += 0.1f;		//attackSpeed
+		this->attackCooldown += 0.2f;		//attackSpeed
 }
 
 void Player::update()
