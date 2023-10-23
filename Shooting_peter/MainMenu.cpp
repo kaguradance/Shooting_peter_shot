@@ -108,5 +108,3 @@ void MainMenu::updateMouseInput(sf::RenderWindow& window)
 
 	}
 }
-
-
