@@ -7,6 +7,7 @@
 
 class MainMenu
 
+
 {
 private:
 	sf::Texture menuBackgroundTex;
@@ -29,3 +30,4 @@ public:
 	void updateMouseInput(sf::RenderWindow& window);
 	std::string gameStatus;
 };
+

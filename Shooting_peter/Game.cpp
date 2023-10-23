@@ -430,6 +430,7 @@ void Game::render()
 	{
 		scoreboard.draw(*this->window);
 	}
+	
 
 	this->window->display();
 }

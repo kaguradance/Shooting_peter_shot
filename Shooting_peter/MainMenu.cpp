@@ -105,6 +105,7 @@ void MainMenu::updateMouseInput(sf::RenderWindow& window)
 		}
 		else
 			this->menu[i].setFillColor(sf::Color::White);
+
 	}
 }
 
