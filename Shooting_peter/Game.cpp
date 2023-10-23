@@ -342,6 +342,11 @@ void Game::update()
 			this->countSpwanTimer = 0.2f;
 			mainMenu.gameStatus = "";
 		}
+		else if (mainMenu.gameStatus == "Scoreboard")
+		{
+			gameState = GameState::Scoreboard;
+			mainMenu.gameStatus = "";
+		}
 	}
 	else if (this->gameState == GameState::GameOver)
 	{

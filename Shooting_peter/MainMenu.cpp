@@ -91,12 +91,12 @@ void MainMenu::updateMouseInput(sf::RenderWindow& window)
 					std::cout << "Start Game" << std::endl;
 					this->gameStatus = "Start";
 				}
-				if (mouseHoding[1])
+				else if (mouseHoding[1])
 				{
 					std::cout << "Scoreboard" << std::endl;
 					this->gameStatus = "Scoreboard";
 				}
-				if (mouseHoding[2])
+				else if (mouseHoding[2])
 				{
 					std::cout << "Exit" << std::endl;
 					window.close();
