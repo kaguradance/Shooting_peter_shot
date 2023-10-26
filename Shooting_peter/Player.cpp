@@ -3,7 +3,7 @@
 void Player::initVariables()
 {
 	this->movementSpeed = 3.f;
-	this->attackCooldownMax = 20.f;
+	this->attackCooldownMax = 10.f;
 	this->attackCooldown = this->attackCooldownMax;
 
 	this->hpMax = 5;
@@ -73,6 +73,11 @@ void Player::setHp(const int hp)
 	this->hp = hp;
 }
 
+void Player::setHpMax(const int hpMax)
+{
+	this->hpMax = hpMax;
+}
+
 void Player::loseHp(const int value)
 {
 	this->hp -= value;
@@ -108,7 +113,7 @@ const bool Player::canAttack()
 void Player::updateAttack()
 {
 	if (this->attackCooldown < this->attackCooldownMax)
-		this->attackCooldown += 0.2f;		//attackSpeed
+		this->attackCooldown += 0.2f;
 }
 
 void Player::update()

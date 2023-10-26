@@ -23,7 +23,7 @@ void Game::initGUI()
 	this->pointText.setCharacterSize(36);
 	this->pointText.setFillColor(sf::Color::White);
 
-	this->pointMaxText.setPosition(650.f, 50.f);
+	this->pointMaxText.setPosition(680.f, 50.f);
 	this->pointMaxText.setFont(this->font);
 	this->pointMaxText.setCharacterSize(36);
 	this->pointMaxText.setFillColor(sf::Color::White);
@@ -36,14 +36,6 @@ void Game::initGUI()
 		this->window->getSize().x / 2.f - this->gameOverText.getGlobalBounds().width / 2.f,
 		this->window->getSize().y / 2.f - this->gameOverText.getGlobalBounds().height / 2.f);
 
-	this->newGameText.setFont(this->font);
-	this->newGameText.setCharacterSize(36);
-	this->newGameText.setFillColor(sf::Color::White);
-	this->newGameText.setString("Press Enter to go to next page.");
-	this->newGameText.setPosition(
-		this->window->getSize().x / 2.f - this->newGameText.getGlobalBounds().width / 2.f,
-		this->window->getSize().y / 2.f - this->gameOverText.getGlobalBounds().height / 2.f + 100.f);
-
 	//init player GUI
 	this->playerHpBar.setSize(sf::Vector2f(300.f, 25.f));
 	this->playerHpBar.setFillColor(sf::Color::Magenta);
@@ -51,19 +43,26 @@ void Game::initGUI()
 
 	this->playerHpBarBack = this->playerHpBar;
 	this->playerHpBarBack.setFillColor(sf::Color(25, 25, 25, 200));
+
 }
 
 void Game::initWorld()
 {
-	if (!this->worldBackgroundTex.loadFromFile("Textures/bg1.png"))
+	if (!this->worldBackgroundTex.loadFromFile("Textures/BGgameplay.png"))
 	{
 		std::cout << "ERROR BG" << "\n";
 	}
 	this->worldBackground.setTexture(this->worldBackgroundTex);
+
+	if (!this->endgameBGTex.loadFromFile("Textures/BGendgame.png"))
+		std::cout << "ERROR endgameBG" << endl;
+	this->endgameBG.setTexture(this->endgameBGTex);
+
 }
 
 void Game::initSystems()
 {
+
 }
 
 void Game::initplayer()
@@ -93,12 +92,12 @@ Game::Game()
 {
 	this->initWindow();
 	this->initTextures();
-	this->initGUI();
-	this->initWorld();
 	this->initSystems();
 	this->initplayer();
-	this->initEnemies();
 	this->initItems();
+	this->initEnemies();
+	this->initGUI();
+	this->initWorld();
 }
 
 Game::~Game()
@@ -142,6 +141,11 @@ void Game::run()
 	}
 }
 
+int Game::getPoint()
+{
+	return this->pointMax;
+}
+
 void Game::updatePollEvent()
 {
 	sf::Event e;
@@ -157,6 +161,7 @@ void Game::updatePollEvent()
 			{
 				std::cout << "Enter pressed!" << std::endl;
 				this->player->setHp(5);
+				this->player->setHpMax(5);
 				this->points = 0;
 				this->countSpwanTimer = 0.2f;
 				this->countSpwanTimerItemHeart = 0.1f;
@@ -172,9 +177,7 @@ void Game::updatePollEvent()
 				this->items.clear();
 				this->counter = 0;
 				this->counterItems = 0;
-				this->gameState = GameState::GameOver;
-				std::cout << "Game Over" << std::endl;
-				mainMenu.gameStatus = "";
+				this->window->close();
 			}
 		}
 	}
@@ -212,7 +215,7 @@ void Game::updateGUI()
 	ss << "Point : " << this->points;
 	this->pointText.setString(ss.str());
 	std::stringstream sss;
-	sss << "PointMax : " << this->pointMax;
+	sss << "Score : " << this->pointMax;
 	this->pointMaxText.setString(sss.str());
 
 	//update player GUI
@@ -272,7 +275,7 @@ void Game::updateEnemies()
 	this->spawnTimer += countSpwanTimer; //spawn time
 	if (this->spawnTimer >= spawnTimerMax)
 	{
-		this->enemies.push_back(new Enemy(rand() % this->window->getSize().x - 20.f, -100.f));
+		this->enemies.push_back(new Enemy(70.f + rand() % this->window->getSize().x - 70.f, -100.f));
 		this->spawnTimer = 0.f;
 	}
 
@@ -387,9 +390,8 @@ void Game::updateCombat()
 
 void Game::update()
 {
-	if (this->gameState == GameState::GamePlay)
-	{
 		this->updateInput();
+		this->updateWorld();
 		this->player->update();
 		this->updateCollision();
 		this->updateBullets();
@@ -397,47 +399,6 @@ void Game::update()
 		this->updateItems();
 		this->updateCombat();
 		this->updateGUI();
-		this->updateWorld();
-	}
-	else if (this->gameState == GameState::MainMenu)
-	{
-		this->mainMenu.updateMouseInput(*window);
-		mainMenu.draw(*this->window);
-
-		if (mainMenu.gameStatus == "Start")
-		{
-			gameState = GameState::GamePlay;
-			this->player->setPosition(this->window->getSize().x / 2 - (this->player->getBounds().width / 2), this->window->getSize().y / 2 - this->player->getBounds().top / 2);
-			mainMenu.gameStatus = "";
-		}
-		else if (mainMenu.gameStatus == "Scoreboard")
-		{
-			gameState = GameState::Scoreboard;
-			mainMenu.gameStatus = "";
-		}
-	}
-	else if (this->gameState == GameState::GameOver)
-	{
-		this->gameOver.updateMouseInput(*window);
-		gameOver.draw(*this->window);
-
-		if (gameOver.gameStatus == "Scoreboard")
-		{
-			gameState = GameState::Scoreboard;
-			gameOver.gameStatus = "";
-		}
-	}
-	else if (this->gameState == GameState::Scoreboard)
-	{
-		this->scoreboard.updateMouseInput(*window);
-		scoreboard.draw(*this->window);
-
-		if (scoreboard.gameStatus == "MainMenu")
-		{
-			gameState = GameState::MainMenu;
-			scoreboard.gameStatus = "";
-		}
-	}
 }
 
 void Game::renderGUI()
@@ -457,49 +418,39 @@ void Game::render()
 {
 	this->window->clear();
 
-	//draw world
+	//Draw world
 	this->renderWorld();
 
-	if (this->gameState == GameState::GamePlay)
+	//Draw all the stuffs
+	this->player->render(*this->window);
+
+	for (auto* bullet : this->bullets)
 	{
-		this->player->render(*this->window);
-
-		for (auto* bullet : this->bullets)
-		{
-			bullet->render(this->window);
-		}
-
-		for (auto* enemy : this->enemies)
-		{
-			enemy->render(this->window);
-		}
-
-		for (auto* item : this->items)
-		{
-			item->render(this->window);
-		}
-
-		this->renderGUI();
-		//Game over screen
-		if (this->player->getHp() <= 0 || this->points < 0)
-		{
-			this->window->draw(this->gameOverText);
-			this->window->draw(this->newGameText);
-
-		}
+		bullet->render(this->window);
 	}
-	else if (this->gameState == GameState::MainMenu)
+
+	for (auto* enemy : this->enemies)
 	{
-		//draw stuffs
-		mainMenu.draw(*this->window);
+		//std::cout << "Enemies position: " << enemy->getBounds().left << ", " << enemy->getBounds().top << std::endl;
+		enemy->render(this->window);
 	}
-	else if (this->gameState == GameState::GameOver)
+
+	for (auto* item : this->items)
 	{
-		gameOver.draw(*this->window);
+		//item->update();
+		// std::cout << "Item position: " << item->sprite.getPosition().x << ", " << item->sprite.getPosition().y<< std::endl;
+		item->render(this->window);
 	}
-	else if (this->gameState == GameState::Scoreboard)
+
+	this->renderGUI();
+
+	//Game over screen
+	if (this->player->getHp() <= 0 || this->points < 0)
 	{
-		scoreboard.draw(*this->window);
+		this->window->draw(this->endgameBG);
+		this->window->draw(this->gameOverText);
 	}
+
 	this->window->display();
+
 }

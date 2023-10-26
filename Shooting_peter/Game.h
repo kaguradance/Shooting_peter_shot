@@ -4,23 +4,16 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <iomanip>
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
-#include "MainMenu.h"
-#include "GameOver.h"
-#include "Scoreboard.h"
+#include "Menu.h"
 #include "Item.h"
-
-enum class GameState
-{
-	MainMenu,
-	Scoreboard,
-	GamePlay,
-	GameOver,
-};
 
 class Game
 {
@@ -35,6 +28,7 @@ private:
 
 	//GUI
 	sf::Font font;
+	
 	sf::Text pointText;
 	sf::Text pointMaxText;
 
@@ -43,6 +37,8 @@ private:
 
 	sf::Texture worldBackgroundTex;
 	sf::Sprite worldBackground;
+	sf::Texture endgameBGTex;
+	sf::Sprite endgameBG;
 
 	int points;
 	int pointMax;
@@ -52,11 +48,6 @@ private:
 	unsigned counterItems = 0;
 
 	Player* player;
-
-	GameState gameState;
-	MainMenu mainMenu;
-	GameOver gameOver;
-	Scoreboard scoreboard;
 
 	sf::RectangleShape playerHpBar;
 	sf::RectangleShape playerHpBarBack;
@@ -94,6 +85,7 @@ public:
 
 	//Functions
 	void run();
+	int getPoint();
 
 	void updatePollEvent();
 	void updateInput();
