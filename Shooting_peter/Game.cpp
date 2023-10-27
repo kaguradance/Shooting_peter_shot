@@ -28,6 +28,16 @@ void Game::initGUI()
 	this->pointMaxText.setCharacterSize(36);
 	this->pointMaxText.setFillColor(sf::Color::White);
 
+	this->hpText.setFont(this->font);
+	this->hpText.setPosition(20.f, 50.f);
+	this->hpText.setCharacterSize(36);
+	this->hpText.setFillColor(sf::Color::White);
+
+	this->hpMaxText.setFont(this->font);
+	this->hpMaxText.setPosition(20.f, 90.f);
+	this->hpMaxText.setCharacterSize(36);
+	this->hpMaxText.setFillColor(sf::Color::White);
+
 	this->gameOverText.setFont(this->font);
 	this->gameOverText.setCharacterSize(70);
 	this->gameOverText.setFillColor(sf::Color::Red);
@@ -214,9 +224,18 @@ void Game::updateGUI()
 	std::stringstream ss;
 	ss << "Point : " << this->points;
 	this->pointText.setString(ss.str());
+
 	std::stringstream sss;
 	sss << "Score : " << this->pointMax;
 	this->pointMaxText.setString(sss.str());
+
+	std::stringstream sshp;
+	sshp << "HP : " << this->player->getHp();
+	this->hpText.setString(sshp.str());
+
+	std::stringstream sshpmax;
+	sshpmax << "HP MAX : " << this->player->getHpMax();
+	this->hpMaxText.setString(sshpmax.str());
 
 	//update player GUI
 	float hpPercent = static_cast<float> (this->player->getHp()) / this->player->getHpMax();
@@ -280,8 +299,8 @@ void Game::updateEnemies()
 	}
 
 	//count spawning time Enemy
-	if (timerEnemy.getElapsedTime().asSeconds() >= 6.f) {
-		countSpwanTimer += 0.1f;
+	if (timerEnemy.getElapsedTime().asSeconds() >= 15.f) {
+		countSpwanTimer += 0.05f;
 		timerEnemy.restart();
 	}
 
@@ -325,8 +344,8 @@ void Game::updateItems()
 	}
 
 	//count spawning time item
-	if (timerItem.getElapsedTime().asSeconds() >= 20.f) {
-		countSpwanTimerItemHeart += 0.1f;
+	if (timerItem.getElapsedTime().asSeconds() >= 23.f) {
+		countSpwanTimerItemHeart += 0.05f;
 		timerItem.restart();
 	}
 	
@@ -405,6 +424,8 @@ void Game::renderGUI()
 {
 	this->window->draw(this->pointText);
 	this->window->draw(this->pointMaxText);
+	this->window->draw(this->hpText);
+	this->window->draw(this->hpMaxText);
 	this->window->draw(this->playerHpBarBack);
 	this->window->draw(this->playerHpBar);
 }

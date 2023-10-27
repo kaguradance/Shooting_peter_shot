@@ -31,6 +31,8 @@ private:
 	
 	sf::Text pointText;
 	sf::Text pointMaxText;
+	sf::Text hpText;
+	sf::Text hpMaxText;
 
 	sf::Text gameOverText;
 	sf::Text newGameText;;

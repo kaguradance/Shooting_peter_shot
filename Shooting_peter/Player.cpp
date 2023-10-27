@@ -3,7 +3,7 @@
 void Player::initVariables()
 {
 	this->movementSpeed = 3.f;
-	this->attackCooldownMax = 10.f;
+	this->attackCooldownMax = 9.f;
 	this->attackCooldown = this->attackCooldownMax;
 
 	this->hpMax = 5;
@@ -81,6 +81,7 @@ void Player::setHpMax(const int hpMax)
 void Player::loseHp(const int value)
 {
 	this->hp -= value;
+	//this->hpMax -= value;
 	if (this->hp < 0)
 		this->hp = 0;
 }
@@ -88,10 +89,9 @@ void Player::loseHp(const int value)
 void Player::gainHeart(int heart)
 {
 	this->hp += heart;
-	this->hpMax += heart;
 	if (this->hp > 0)
 		this->hp += 1;
-	if (this->hpMax > 0)
+	if (this->hpMax <  this->hp)
 		this->hpMax += 1;
 }
 
