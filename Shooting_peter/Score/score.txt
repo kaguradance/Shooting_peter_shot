@@ -6,3 +6,5 @@ fasfd,*10
 plaif,*34
 f,*49
 kk,*28
+play,*22
+plai,*1

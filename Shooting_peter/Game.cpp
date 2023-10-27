@@ -169,7 +169,7 @@ void Game::updatePollEvent()
 		{
 			if (e.Event::KeyPressed && e.Event::key.code == sf::Keyboard::Enter)
 			{
-				std::cout << "Enter pressed!" << std::endl;
+				//std::cout << "Enter pressed!" << std::endl;
 				this->player->setHp(5);
 				this->player->setHpMax(5);
 				this->points = 0;
@@ -366,7 +366,7 @@ void Game::updateItems()
 		//Item player collision
 		else if (item->getBounds().intersects(this->player->getBounds()))
 		{
-			std::cout << "Player collected an item!" << std::endl;
+			//std::cout << "Player collected an item!" << std::endl;
 
 			switch (item->getType())
 			{
